@@ -1,0 +1,11 @@
+/.gradle/
+/build/
+/run/
+/libs/
+/Sable-collision-damage.ipr
+/gradlew
+/Sable-collision-damage.iws
+/Sable-collision-damage.iml
+/gradlew.bat
+/gradle/
+/.idea/
