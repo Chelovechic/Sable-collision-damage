@@ -26,8 +26,34 @@ sourceSets.main.resources {
     exclude("src/generated/**/.cache") // datagen cache files
 }
 
+//THIS need to automatically download all dependencies
+//versions u can change in gradle.properties
+//(look all diff of this commit, please)
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "RyanHCode Maven"
+                url = "https://maven.ryanhcode.dev/releases"
+            }
+        }
+        filter {
+            includeGroup "dev.ryanhcode.sable"
+            includeGroup "dev.ryanhcode.sable-companion"
+        }
+    }
 }
 
 base {
@@ -118,33 +144,11 @@ configurations {
 }
 
 dependencies {
-//добавьте jar или подключите репозиторий
-    compileOnly files("libs/sable-neoforge-1.21.1-1.1.3.jar")
-    compileOnly files("libs/sable-companion-common-1.21.1-1.4.2.jar")
-    localRuntime files("libs/sable-neoforge-1.21.1-1.1.3.jar")
-    localRuntime files("libs/sable-companion-common-1.21.1-1.4.2.jar")
+    // see end of gradle.properties to change versions of dependencies
+    compileOnly "maven.modrinth:sable:${sable_version_id}"
+    localRuntime "maven.modrinth:sable:${sable_version_id}"
 
-    // Example optional mod dependency with JEI
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
-    // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"
-    // We add the full version to localRuntime, not runtimeOnly, so that we do not publish a dependency on it
-    // localRuntime "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
-
-    // Example mod dependency using a mod jar from ./libs with a flat dir repository
-    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
-    // The group id is ignored when searching -- in this case, it is "blank"
-    // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
-
-    // Example mod dependency using a file as dependency
-    // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
-
-    // Example project dependency using a sister or child project:
-    // implementation project(":myproject")
-
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    compileOnly "dev.ryanhcode.sable-companion:sable-companion-common-${minecraft_version}:${sable_companion_version}"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
