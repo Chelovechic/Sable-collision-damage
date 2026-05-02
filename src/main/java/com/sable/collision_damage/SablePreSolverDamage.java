@@ -78,7 +78,8 @@ public final class SablePreSolverDamage {
             final ServerSubLevel slowdownTarget = target.subLevel() != null
                     ? target.subLevel()
                     : findIntersectingShip(event.getPhysicsSystem().getLevel(), pendingBreak.globalHitPos());
-            queueSlowdown(event.getPhysicsSystem(), slowdownTarget, pendingBreak.globalHitPos());
+            final float destroySpeed = getDestroySpeed(target, event.getPhysicsSystem().getLevel());
+            queueSlowdown(event.getPhysicsSystem(), slowdownTarget, pendingBreak.globalHitPos(), destroySpeed);
         }
     }
 
@@ -135,8 +136,10 @@ public final class SablePreSolverDamage {
                 .add(new PendingBlockBreak(target, target.state(), new Vector3d(globalHitPos), impactVelocity));
     }
 
-    private static void queueSlowdown(final SubLevelPhysicsSystem system, final @Nullable ServerSubLevel subLevel, final Vector3d globalHitPos) {
-        final double slowdownPerBlock = Config.STATIC_SLOWDOWN_PER_BLOCK.get();
+    private static void queueSlowdown(final SubLevelPhysicsSystem system, final @Nullable ServerSubLevel subLevel, final Vector3d globalHitPos,
+                                      final float destroySpeed) {
+        final double slowdownPerBlock = Config.STATIC_SLOWDOWN_PER_BLOCK.get()
+                + Math.max(0.0F, destroySpeed) * Config.DESTROY_SPEED_SLOWDOWN_FACTOR.get();
         if (system == null || subLevel == null || subLevel.isRemoved() || slowdownPerBlock <= 0.0D) {
             return;
         }

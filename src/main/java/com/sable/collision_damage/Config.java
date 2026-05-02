@@ -22,6 +22,10 @@ public final class Config {
             .comment("статическое замедление от разрушения блоков")
             .defineInRange("staticSlowdownPerBlock", 3.0D, 0.0D, Double.MAX_VALUE);
 
+    public static final ModConfigSpec.DoubleValue DESTROY_SPEED_SLOWDOWN_FACTOR = BUILDER
+            .comment("добавка к замедлению за каждую единицу destroySpeed разрушенного блока")
+            .defineInRange("destroySpeedSlowdownFactor", 0.15D, 0.0D, Double.MAX_VALUE);
+
     public static final ModConfigSpec.DoubleValue BLOCK_BURST_COUNT_BASE = BUILDER
             .comment("\n")
             .comment("блок партиклов: базовое количество")
