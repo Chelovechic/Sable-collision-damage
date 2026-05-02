@@ -15,15 +15,20 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.IceBlock;
 import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import com.sable.collision_damage.particle.SableImpactParticles;
 
 public final class SablePreSolverDamage {
+    private static final TagKey<Block> SABLE_FRAGILE_TAG = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("sable", "fragile"));
     private static final Object2ObjectOpenHashMap<SubLevelPhysicsSystem, ObjectArrayList<PendingBlockBreak>> PENDING_BLOCK_BREAKS = new Object2ObjectOpenHashMap<>();
     private static final Object2ObjectOpenHashMap<SubLevelPhysicsSystem, ObjectArrayList<PendingContactSlowdown>> PENDING_CONTACT_SLOWDOWNS = new Object2ObjectOpenHashMap<>();
 
@@ -39,7 +44,7 @@ public final class SablePreSolverDamage {
             return originalCallback;
         }
 
-        return new DestroySpeedAwareCallback(state);
+        return new DestroySpeedAwareCallback(state, originalCallback);
     }
 
     private static boolean shouldPreserveOriginalCallback(final @Nullable BlockSubLevelCollisionCallback originalCallback) {
@@ -206,6 +211,14 @@ public final class SablePreSolverDamage {
         return sourceState.getDestroySpeed(level, target.blockPos());
     }
 
+    private static double getFragilityMultiplier(final BlockState state) {
+        if (state.is(SABLE_FRAGILE_TAG)) {
+            return Config.FRAGILE_TAG_MULTIPLIER.get();
+        }
+
+        return 1.0D;
+    }
+
     private static @Nullable CollisionTarget resolveShipTarget(final ServerLevel level, final BlockPos localBlockPos, final Vector3d globalHitPos) {
         final Iterable<SubLevel> intersecting = Sable.HELPER.getAllIntersecting(
                 level,
@@ -301,15 +314,21 @@ public final class SablePreSolverDamage {
 
     private static final class DestroySpeedAwareCallback implements BlockSubLevelCollisionCallback {
         private final BlockState sourceState;
+        private final @Nullable BlockSubLevelCollisionCallback originalCallback;
 
-        private DestroySpeedAwareCallback(final BlockState sourceState) {
+        private DestroySpeedAwareCallback(final BlockState sourceState, final @Nullable BlockSubLevelCollisionCallback originalCallback) {
             this.sourceState = sourceState;
+            this.originalCallback = originalCallback;
         }
 
         @Override
         public CollisionResult sable$onCollision(final BlockPos pos, final Vector3d hitPos, final double impactVelocity) {
             final double baseTriggerVelocity = Config.MIN_BREAK_SPEED.get();
             if (impactVelocity * impactVelocity < baseTriggerVelocity * baseTriggerVelocity) {
+                if (this.originalCallback != null) {
+                    return this.originalCallback.sable$onCollision(pos, hitPos, impactVelocity);
+                }
+
                 return CollisionResult.NONE;
             }
 
@@ -319,6 +338,10 @@ public final class SablePreSolverDamage {
 
             if (target == null) {
                 return CollisionResult.NONE;
+            }
+
+            if (target.subLevel() == null && this.originalCallback != null) {
+                return this.originalCallback.sable$onCollision(pos, hitPos, impactVelocity);
             }
 
             final BlockState state = target.state();
@@ -338,9 +361,9 @@ public final class SablePreSolverDamage {
 
             final double ownHardnessPenalty = Math.max(0.0F, destroySpeed) * Config.DESTROY_SPEED_HARDNESS_FACTOR.get();
             final double softerCounterpartBonus = Math.max(0.0F, destroySpeed - counterpartDestroySpeed) * Config.COUNTERPART_HARDNESS_FACTOR.get();
-            final double requiredVelocity = baseTriggerVelocity
+            final double requiredVelocity = (baseTriggerVelocity
                     + ownHardnessPenalty
-                    + softerCounterpartBonus;
+                    + softerCounterpartBonus) * getFragilityMultiplier(state);
             if (impactVelocity * impactVelocity < requiredVelocity * requiredVelocity) {
                 return CollisionResult.NONE;
             }

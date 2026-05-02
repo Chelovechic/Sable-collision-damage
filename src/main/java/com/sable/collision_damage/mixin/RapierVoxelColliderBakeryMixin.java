@@ -19,6 +19,6 @@ public abstract class RapierVoxelColliderBakeryMixin {
             remap = false
     )
     private BlockSubLevelCollisionCallback sablecollisiondamage$wrapCollisionCallback(final BlockState callbackState, final BlockState state) {
-        return SablePreSolverDamage.getCallbackFor(state, BlockWithSubLevelCollisionCallback.sable$getCallback(callbackState));
+        return SablePreSolverDamage.getCallbackFor(callbackState, BlockWithSubLevelCollisionCallback.sable$getCallback(callbackState));
     }
 }

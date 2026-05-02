@@ -17,6 +17,10 @@ public final class Config {
             .comment("добавка к порогу разрушения, если блок сталкивается с более мягким материалом")
             .defineInRange("counterpartHardnessFactor", 1.0D, 0.0D, Double.MAX_VALUE);
 
+    public static final ModConfigSpec.DoubleValue FRAGILE_TAG_MULTIPLIER = BUILDER
+            .comment("множитель порога разрушения для блоков из тега sable:fragile")
+            .defineInRange("fragileTagMultiplier", 0.15D, 0.0D, Double.MAX_VALUE);
+
     public static final ModConfigSpec.DoubleValue STATIC_SLOWDOWN_PER_BLOCK = BUILDER
             .comment("\n")
             .comment("статическое замедление от разрушения блоков")
