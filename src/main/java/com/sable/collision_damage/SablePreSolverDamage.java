@@ -24,15 +24,30 @@ import org.joml.Vector3d;
 import com.sable.collision_damage.particle.SableImpactParticles;
 
 public final class SablePreSolverDamage {
-    private static final BlockSubLevelCollisionCallback UNIVERSAL_FRAGILE_CALLBACK = new UniversalFragileCallback();
     private static final Object2ObjectOpenHashMap<SubLevelPhysicsSystem, ObjectArrayList<PendingBlockBreak>> PENDING_BLOCK_BREAKS = new Object2ObjectOpenHashMap<>();
     private static final Object2ObjectOpenHashMap<SubLevelPhysicsSystem, ObjectArrayList<PendingContactSlowdown>> PENDING_CONTACT_SLOWDOWNS = new Object2ObjectOpenHashMap<>();
 
     private SablePreSolverDamage() {
     }
 
-    public static @Nullable BlockSubLevelCollisionCallback getCallbackFor(final BlockState state) {
-        return state.isAir() ? null : UNIVERSAL_FRAGILE_CALLBACK;
+    public static @Nullable BlockSubLevelCollisionCallback getCallbackFor(final BlockState state, final @Nullable BlockSubLevelCollisionCallback originalCallback) {
+        if (state.isAir()) {
+            return null;
+        }
+
+        if (shouldPreserveOriginalCallback(originalCallback)) {
+            return originalCallback;
+        }
+
+        return new DestroySpeedAwareCallback(state);
+    }
+
+    private static boolean shouldPreserveOriginalCallback(final @Nullable BlockSubLevelCollisionCallback originalCallback) {
+        if (originalCallback == null) {
+            return false;
+        }
+
+        return !"FragileBlockCallback".equals(originalCallback.getClass().getSimpleName());
     }
 
     public static void onPostPhysicsTick(final ForgeSablePostPhysicsTickEvent event) {
@@ -169,6 +184,25 @@ public final class SablePreSolverDamage {
         return new CollisionTarget(null, blockPos, worldState);
     }
 
+    private static float getDestroySpeed(final CollisionTarget target, final ServerLevel level) {
+        return target.subLevel() == null
+                ? target.state().getDestroySpeed(level, target.blockPos())
+                : target.state().getDestroySpeed(target.subLevel().getPlot().getEmbeddedLevelAccessor(), target.blockPos());
+    }
+
+    private static float getCounterpartDestroySpeed(final CollisionTarget target, final ServerLevel level, final BlockState sourceState) {
+        if (target.subLevel() == null) {
+            return sourceState.getDestroySpeed(level, target.blockPos());
+        }
+
+        final BlockState worldState = level.getBlockState(target.blockPos());
+        if (!worldState.isAir()) {
+            return worldState.getDestroySpeed(level, target.blockPos());
+        }
+
+        return sourceState.getDestroySpeed(level, target.blockPos());
+    }
+
     private static @Nullable CollisionTarget resolveShipTarget(final ServerLevel level, final BlockPos localBlockPos, final Vector3d globalHitPos) {
         final Iterable<SubLevel> intersecting = Sable.HELPER.getAllIntersecting(
                 level,
@@ -262,11 +296,17 @@ public final class SablePreSolverDamage {
     private record PendingContactSlowdown(ServerSubLevel subLevel, Vector3d plotContactPoint, Vector3d globalHitPos, double slowdown) {
     }
 
-    private static final class UniversalFragileCallback implements BlockSubLevelCollisionCallback {
+    private static final class DestroySpeedAwareCallback implements BlockSubLevelCollisionCallback {
+        private final BlockState sourceState;
+
+        private DestroySpeedAwareCallback(final BlockState sourceState) {
+            this.sourceState = sourceState;
+        }
+
         @Override
         public CollisionResult sable$onCollision(final BlockPos pos, final Vector3d hitPos, final double impactVelocity) {
-            final double triggerVelocity = Config.MIN_BREAK_SPEED.get();
-            if (impactVelocity * impactVelocity < triggerVelocity * triggerVelocity) {
+            final double baseTriggerVelocity = Config.MIN_BREAK_SPEED.get();
+            if (impactVelocity * impactVelocity < baseTriggerVelocity * baseTriggerVelocity) {
                 return CollisionResult.NONE;
             }
 
@@ -283,10 +323,22 @@ public final class SablePreSolverDamage {
                 return CollisionResult.NONE;
             }
 
-            final float destroySpeed = target.subLevel() == null
-                    ? state.getDestroySpeed(level, target.blockPos())
-                    : state.getDestroySpeed(target.subLevel().getPlot().getEmbeddedLevelAccessor(), target.blockPos());
+            final float destroySpeed = getDestroySpeed(target, level);
             if (destroySpeed < 0.0F) {
+                return CollisionResult.NONE;
+            }
+
+            final float counterpartDestroySpeed = getCounterpartDestroySpeed(target, level, this.sourceState);
+            if (counterpartDestroySpeed < 0.0F) {
+                return CollisionResult.NONE;
+            }
+
+            final double ownHardnessPenalty = Math.max(0.0F, destroySpeed) * Config.DESTROY_SPEED_HARDNESS_FACTOR.get();
+            final double softerCounterpartBonus = Math.max(0.0F, destroySpeed - counterpartDestroySpeed) * Config.COUNTERPART_HARDNESS_FACTOR.get();
+            final double requiredVelocity = baseTriggerVelocity
+                    + ownHardnessPenalty
+                    + softerCounterpartBonus;
+            if (impactVelocity * impactVelocity < requiredVelocity * requiredVelocity) {
                 return CollisionResult.NONE;
             }
 

@@ -9,6 +9,14 @@ public final class Config {
             .comment("Минимальная скорость")
             .defineInRange("minBreakSpeed", 15.0D, 0.0D, Double.MAX_VALUE);
 
+    public static final ModConfigSpec.DoubleValue DESTROY_SPEED_HARDNESS_FACTOR = BUILDER
+            .comment("добавка к порогу разрушения за каждую единицу destroySpeed блока")
+            .defineInRange("destroySpeedHardnessFactor", 2.0D, 0.0D, Double.MAX_VALUE);
+
+    public static final ModConfigSpec.DoubleValue COUNTERPART_HARDNESS_FACTOR = BUILDER
+            .comment("добавка к порогу разрушения, если блок сталкивается с более мягким материалом")
+            .defineInRange("counterpartHardnessFactor", 1.0D, 0.0D, Double.MAX_VALUE);
+
     public static final ModConfigSpec.DoubleValue STATIC_SLOWDOWN_PER_BLOCK = BUILDER
             .comment("\n")
             .comment("статическое замедление от разрушения блоков")

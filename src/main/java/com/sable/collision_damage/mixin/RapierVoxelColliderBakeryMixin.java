@@ -1,6 +1,7 @@
 package com.sable.collision_damage.mixin;
 
 import com.sable.collision_damage.SablePreSolverDamage;
+import dev.ryanhcode.sable.api.block.BlockWithSubLevelCollisionCallback;
 import dev.ryanhcode.sable.api.physics.callback.BlockSubLevelCollisionCallback;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +18,7 @@ public abstract class RapierVoxelColliderBakeryMixin {
             ),
             remap = false
     )
-    private BlockSubLevelCollisionCallback sablecollisiondamage$wrapCollisionCallback(final BlockState state) {
-        return SablePreSolverDamage.getCallbackFor(state);
+    private BlockSubLevelCollisionCallback sablecollisiondamage$wrapCollisionCallback(final BlockState callbackState, final BlockState state) {
+        return SablePreSolverDamage.getCallbackFor(state, BlockWithSubLevelCollisionCallback.sable$getCallback(callbackState));
     }
 }
