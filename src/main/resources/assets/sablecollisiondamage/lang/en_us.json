@@ -1,4 +1,17 @@
-﻿{
+{
+  "enchantment.sablecollisiondamage.durometer": "Durometer",
+  "message.sablecollisiondamage.durometer.header": "[Durometer] %s",
+  "message.sablecollisiondamage.durometer.destroy_speed": "destroySpeed: %s",
+  "message.sablecollisiondamage.durometer.fragile": "sable:fragile tag: %s",
+  "message.sablecollisiondamage.durometer.break_threshold": "threshold vs equal hardness: %s",
+  "message.sablecollisiondamage.durometer.counterpart_factor": "softer-target bonus factor: %s",
+  "message.sablecollisiondamage.durometer.slowdown": "penetration slowdown: %s",
+  "message.sablecollisiondamage.durometer.persistent_leaves": "persistent leaves are protected from this logic",
+  "message.sablecollisiondamage.durometer.value.yes": "yes",
+  "message.sablecollisiondamage.durometer.value.no": "no",
+  "message.sablecollisiondamage.durometer.value.unbreakable": "unbreakable",
+  "message.sablecollisiondamage.durometer.value.no_break": "does not break",
+  "message.sablecollisiondamage.durometer.value.not_applicable": "not applicable",
   "text.autoconfig.sablecollisiondamage.title": "Sable Collision Damage",
   "text.autoconfig.sablecollisiondamage.option.minBreakSpeed": "Min break speed",
   "text.autoconfig.sablecollisiondamage.option.staticSlowdownPerBlock": "Static slowdown per block"

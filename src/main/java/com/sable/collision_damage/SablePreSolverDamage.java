@@ -219,6 +219,36 @@ public final class SablePreSolverDamage {
         return 1.0D;
     }
 
+    public static BlockDiagnostics inspectBlock(final ServerLevel level, final BlockPos blockPos, final BlockState state) {
+        final float destroySpeed = state.getDestroySpeed(level, blockPos);
+        final boolean persistentLeavesImmune = state.getBlock() instanceof LeavesBlock && state.getValue(LeavesBlock.PERSISTENT);
+        final boolean fragileTag = state.is(SABLE_FRAGILE_TAG);
+        final double counterpartHardnessFactor = Config.COUNTERPART_HARDNESS_FACTOR.get();
+        if (destroySpeed < 0.0F || persistentLeavesImmune) {
+            return new BlockDiagnostics(
+                    destroySpeed,
+                    fragileTag,
+                    -1.0D,
+                    -1.0D,
+                    counterpartHardnessFactor,
+                    persistentLeavesImmune
+            );
+        }
+
+        final double breakThresholdAgainstEqualHardness = (Config.MIN_BREAK_SPEED.get()
+                + Math.max(0.0F, destroySpeed) * Config.DESTROY_SPEED_HARDNESS_FACTOR.get()) * getFragilityMultiplier(state);
+        final double penetrationSlowdown = Config.STATIC_SLOWDOWN_PER_BLOCK.get()
+                + Math.max(0.0F, destroySpeed) * Config.DESTROY_SPEED_SLOWDOWN_FACTOR.get();
+        return new BlockDiagnostics(
+                destroySpeed,
+                fragileTag,
+                breakThresholdAgainstEqualHardness,
+                penetrationSlowdown,
+                counterpartHardnessFactor,
+                false
+        );
+    }
+
     private static @Nullable CollisionTarget resolveShipTarget(final ServerLevel level, final BlockPos localBlockPos, final Vector3d globalHitPos) {
         final Iterable<SubLevel> intersecting = Sable.HELPER.getAllIntersecting(
                 level,
@@ -310,6 +340,16 @@ public final class SablePreSolverDamage {
     }
 
     private record PendingContactSlowdown(ServerSubLevel subLevel, Vector3d plotContactPoint, Vector3d globalHitPos, double slowdown) {
+    }
+
+    public record BlockDiagnostics(
+            float destroySpeed,
+            boolean fragileTag,
+            double breakThresholdAgainstEqualHardness,
+            double penetrationSlowdown,
+            double counterpartHardnessFactor,
+            boolean persistentLeavesImmune
+    ) {
     }
 
     private static final class DestroySpeedAwareCallback implements BlockSubLevelCollisionCallback {

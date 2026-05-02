@@ -1,0 +1,15 @@
+{
+  "enchantment.sablecollisiondamage.durometer": "Дюрометр",
+  "message.sablecollisiondamage.durometer.header": "[Дюрометр] %s",
+  "message.sablecollisiondamage.durometer.destroy_speed": "destroySpeed: %s",
+  "message.sablecollisiondamage.durometer.fragile": "тег sable:fragile: %s",
+  "message.sablecollisiondamage.durometer.break_threshold": "порог о равнопрочном препятствии: %s",
+  "message.sablecollisiondamage.durometer.counterpart_factor": "коэф. добавки за более мягкую преграду: %s",
+  "message.sablecollisiondamage.durometer.slowdown": "потеря скорости при пробитии: %s",
+  "message.sablecollisiondamage.durometer.persistent_leaves": "закреплённая листва не разрушается этой логикой",
+  "message.sablecollisiondamage.durometer.value.yes": "да",
+  "message.sablecollisiondamage.durometer.value.no": "нет",
+  "message.sablecollisiondamage.durometer.value.unbreakable": "нерушимый",
+  "message.sablecollisiondamage.durometer.value.no_break": "не разрушается",
+  "message.sablecollisiondamage.durometer.value.not_applicable": "не применяется"
+}
