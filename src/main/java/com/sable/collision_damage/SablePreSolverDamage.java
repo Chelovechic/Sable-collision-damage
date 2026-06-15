@@ -264,7 +264,7 @@ public final class SablePreSolverDamage {
 
     private static final class UniversalFragileCallback implements BlockSubLevelCollisionCallback {
         @Override
-        public CollisionResult sable$onCollision(final BlockPos pos, final Vector3d hitPos, final double impactVelocity) {
+        public CollisionResult sable$onCollision(final BlockPos pos, final @Nullable BlockPos otherHitBlockPos, final Vector3d hitPos, final double impactVelocity) {
             final double triggerVelocity = Config.MIN_BREAK_SPEED.get();
             if (impactVelocity * impactVelocity < triggerVelocity * triggerVelocity) {
                 return CollisionResult.NONE;
