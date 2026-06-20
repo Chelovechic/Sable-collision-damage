@@ -9,3 +9,5 @@
 /gradlew.bat
 /gradle/
 /.idea/
+/gradlew-sandbox
+/.gradle-sandbox/

@@ -19,7 +19,6 @@ public final class SableCollisiondamage {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
         SableCollisionParticles.PARTICLES.register(modEventBus);
         modEventBus.addListener(SableCollisionNetwork::registerPayloads);
-        modEventBus.addListener(SableCollisionCreativeTabs::onBuildContents);
         NeoForge.EVENT_BUS.addListener(SablePreSolverDamage::onPostPhysicsTick);
         NeoForge.EVENT_BUS.addListener(DurometerHandler::onRightClickBlock);
         LOGGER.info("SCD-loaded");
