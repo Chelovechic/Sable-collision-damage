@@ -8,7 +8,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 public final class SableCollisionEnchantments {
     public static final ResourceKey<Enchantment> DUROMETER = ResourceKey.create(
             Registries.ENCHANTMENT,
-            ResourceLocation.fromNamespaceAndPath(SableCollisiondamage.MODID, "durometer")
+            ResourceLocation.fromNamespaceAndPath(SableCollisionDamage.MODID, "durometer")
     );
 
     private SableCollisionEnchantments() {

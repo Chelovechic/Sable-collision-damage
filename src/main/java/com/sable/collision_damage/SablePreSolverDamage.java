@@ -36,7 +36,7 @@ public final class SablePreSolverDamage {
     }
 
     public static @Nullable BlockSubLevelCollisionCallback getCallbackFor(final BlockState state, final @Nullable BlockSubLevelCollisionCallback originalCallback) {
-        if (state.isAir()) {
+        if (state.isAir() || isFluidBlock(state)) {
             return null;
         }
 
@@ -53,6 +53,10 @@ public final class SablePreSolverDamage {
         }
 
         return !"FragileBlockCallback".equals(originalCallback.getClass().getSimpleName());
+    }
+
+    public static boolean isFluidBlock(final BlockState state) {
+        return !state.getFluidState().isEmpty();
     }
 
     public static void onPostPhysicsTick(final ForgeSablePostPhysicsTickEvent event) {
@@ -185,7 +189,7 @@ public final class SablePreSolverDamage {
         }
 
         final BlockState worldState = level.getBlockState(blockPos);
-        if (worldState.isAir()) {
+        if (worldState.isAir() || isFluidBlock(worldState)) {
             return null;
         }
 
@@ -265,7 +269,7 @@ public final class SablePreSolverDamage {
 
             final EmbeddedPlotLevelAccessor accessor = serverSubLevel.getPlot().getEmbeddedLevelAccessor();
             final BlockState state = accessor.getBlockState(localBlockPos);
-            if (state.isAir()) {
+            if (state.isAir() || isFluidBlock(state)) {
                 continue;
             }
 
@@ -292,7 +296,7 @@ public final class SablePreSolverDamage {
 
     private static boolean destroyBlockFragileLike(final ServerLevel level, final CollisionTarget target) {
         final BlockState state = target.state();
-        if (state.isAir()) {
+        if (state.isAir() || isFluidBlock(state)) {
             return false;
         }
 
@@ -362,11 +366,12 @@ public final class SablePreSolverDamage {
         }
 
         @Override
-        public CollisionResult sable$onCollision(final BlockPos pos, final Vector3d hitPos, final double impactVelocity) {
+        public CollisionResult sable$onCollision(final BlockPos pos, final @Nullable BlockPos collidedPos,
+                                                final Vector3d hitPos, final double impactVelocity) {
             final double baseTriggerVelocity = Config.MIN_BREAK_SPEED.get();
             if (impactVelocity * impactVelocity < baseTriggerVelocity * baseTriggerVelocity) {
                 if (this.originalCallback != null) {
-                    return this.originalCallback.sable$onCollision(pos, hitPos, impactVelocity);
+                    return this.originalCallback.sable$onCollision(pos, collidedPos, hitPos, impactVelocity);
                 }
 
                 return CollisionResult.NONE;
@@ -381,7 +386,7 @@ public final class SablePreSolverDamage {
             }
 
             if (target.subLevel() == null && this.originalCallback != null) {
-                return this.originalCallback.sable$onCollision(pos, hitPos, impactVelocity);
+                return this.originalCallback.sable$onCollision(pos, collidedPos, hitPos, impactVelocity);
             }
 
             final BlockState state = target.state();
