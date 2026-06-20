@@ -6,7 +6,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
-@Mod(value = SableCollisiondamage.MODID, dist = Dist.CLIENT)
+@Mod(value = SableCollisionDamage.MODID, dist = Dist.CLIENT)
 public final class SableCollisiondamageClient {
     public SableCollisiondamageClient(final ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);

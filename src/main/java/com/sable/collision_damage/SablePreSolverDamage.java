@@ -362,11 +362,12 @@ public final class SablePreSolverDamage {
         }
 
         @Override
-        public CollisionResult sable$onCollision(final BlockPos pos, final Vector3d hitPos, final double impactVelocity) {
+        public CollisionResult sable$onCollision(final BlockPos pos, final @Nullable BlockPos collidedPos,
+                                                final Vector3d hitPos, final double impactVelocity) {
             final double baseTriggerVelocity = Config.MIN_BREAK_SPEED.get();
             if (impactVelocity * impactVelocity < baseTriggerVelocity * baseTriggerVelocity) {
                 if (this.originalCallback != null) {
-                    return this.originalCallback.sable$onCollision(pos, hitPos, impactVelocity);
+                    return this.originalCallback.sable$onCollision(pos, collidedPos, hitPos, impactVelocity);
                 }
 
                 return CollisionResult.NONE;
@@ -381,7 +382,7 @@ public final class SablePreSolverDamage {
             }
 
             if (target.subLevel() == null && this.originalCallback != null) {
-                return this.originalCallback.sable$onCollision(pos, hitPos, impactVelocity);
+                return this.originalCallback.sable$onCollision(pos, collidedPos, hitPos, impactVelocity);
             }
 
             final BlockState state = target.state();
