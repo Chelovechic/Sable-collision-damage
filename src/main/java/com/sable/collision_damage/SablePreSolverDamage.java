@@ -36,7 +36,7 @@ public final class SablePreSolverDamage {
     }
 
     public static @Nullable BlockSubLevelCollisionCallback getCallbackFor(final BlockState state, final @Nullable BlockSubLevelCollisionCallback originalCallback) {
-        if (state.isAir()) {
+        if (state.isAir() || isFluidBlock(state)) {
             return null;
         }
 
@@ -53,6 +53,10 @@ public final class SablePreSolverDamage {
         }
 
         return !"FragileBlockCallback".equals(originalCallback.getClass().getSimpleName());
+    }
+
+    public static boolean isFluidBlock(final BlockState state) {
+        return !state.getFluidState().isEmpty();
     }
 
     public static void onPostPhysicsTick(final ForgeSablePostPhysicsTickEvent event) {
@@ -185,7 +189,7 @@ public final class SablePreSolverDamage {
         }
 
         final BlockState worldState = level.getBlockState(blockPos);
-        if (worldState.isAir()) {
+        if (worldState.isAir() || isFluidBlock(worldState)) {
             return null;
         }
 
@@ -265,7 +269,7 @@ public final class SablePreSolverDamage {
 
             final EmbeddedPlotLevelAccessor accessor = serverSubLevel.getPlot().getEmbeddedLevelAccessor();
             final BlockState state = accessor.getBlockState(localBlockPos);
-            if (state.isAir()) {
+            if (state.isAir() || isFluidBlock(state)) {
                 continue;
             }
 
@@ -292,7 +296,7 @@ public final class SablePreSolverDamage {
 
     private static boolean destroyBlockFragileLike(final ServerLevel level, final CollisionTarget target) {
         final BlockState state = target.state();
-        if (state.isAir()) {
+        if (state.isAir() || isFluidBlock(state)) {
             return false;
         }
 
